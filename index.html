@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global ESP32 LED Control</title>
+    <!-- Include MQTT.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f9; }
+        h1 { color: #333; }
+        .btn { font-size: 20px; padding: 15px 30px; margin: 10px; cursor: pointer; border: none; border-radius: 8px; color: white; }
+        .on { background-color: #28a745; }
+        .off { background-color: #dc3545; }
+        #status { font-weight: bold; margin-top: 20px; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>Global ESP32 LED Controller</h1>
+    <p id="status">Connecting to Cloud Broker...</p>
+
+    <div>
+        <button class="btn on" onclick="sendLedCommand('ON')">TURN ALL ON</button>
+        <button class="btn off" onclick="sendLedCommand('OFF')">TURN ALL OFF</button>
+    </div>
+
+    <script>
+        // Connect to HiveMQ public cloud via Secure WebSocket (WSS) port 8884
+        const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+
+        client.on('connect', function () {
+            document.getElementById('status').innerText = 'Connected to Cloud! Ready to control.';
+            document.getElementById('status').style.color = 'green';
+        });
+
+        client.on('error', function (err) {
+            document.getElementById('status').innerText = 'Connection Failed: ' + err;
+            document.getElementById('status').style.color = 'red';
+        });
+
+        function sendLedCommand(command) {
+            // Must match the exact topic in your ESP32 code
+            client.publish('esp32/myuniquename/leds', command, function () {
+                console.log('Cloud message sent: ' + command);
+            });
+        }
+    </script>
+
+</body>
+</html>
